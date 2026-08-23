@@ -9,7 +9,9 @@ Most competitor lists are **category twins**: companies that describe themselves
 
 A **true competitor** is a **substitute** — someone a buyer picks *instead of* the subject when solving the same problem. Substitution is observable in the graph: the same keywords, the same communities, the same buyers, the same head-to-head comparisons. Category resemblance is not evidence. Overlap is.
 
-Invoke `dynamic-query-neo4j` for connection and schema recon before any query here.
+Read the graph's live schema before querying it. Every label and relationship named
+below is a placeholder — substitute what `CALL db.labels()`, `CALL db.relationshipTypes()`
+and a sample row actually return.
 
 ## 1. Pin the subject
 
@@ -69,5 +71,5 @@ Then the cut list: every category twin with its rejection reason.
 ## Where this goes wrong
 
 - **The subject's own marketing** names the competitors it *wants* to be compared to. Weight buyer behaviour over positioning.
-- **Big brands dominate raw overlap counts** because they hold more of everything. Normalise (Jaccard, in `dynamic-query-neo4j`'s patterns) before ranking.
+- **Big brands dominate raw overlap counts** because they hold more of everything. Normalise — Jaccard over the shared neighbour sets — before ranking.
 - **A thin graph** returns a short list that looks decisive. Report the coverage check alongside the list.

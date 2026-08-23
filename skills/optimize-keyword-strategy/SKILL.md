@@ -9,7 +9,9 @@ A keyword list sorted by search volume is a wish list. The high-volume terms are
 
 Strategy means picking the **winnable**: terms where demand is real, intent matches what the subject sells, and the incumbent is beatable. Winnability is the ranking axis; volume is one input to it.
 
-Invoke `dynamic-query-neo4j` for schema recon. Competitor terms come from `find-true-competitors` — a gap against a category twin is not a gap.
+Read the graph's live schema before querying it; the property names below are
+placeholders. Settle the competitive set first — a gap against a company that
+shares the category label but not the buyer is not a gap.
 
 ## 1. Map the current footprint
 
@@ -19,7 +21,7 @@ Look first for **near-misses**: positions 4–20. A term at 8 is often two inter
 
 ## 2. Find the gaps
 
-Terms the competitive set holds and the subject does not, using the gap query in `dynamic-query-neo4j`'s patterns. Rank by **how many rivals cover it**: a term every rival holds is structural demand, while a term one rival holds may be their idiosyncrasy.
+Terms the competitive set holds and the subject does not, excluding any term the subject already holds. Rank by **how many rivals cover it**: a term every rival holds is structural demand, while a term one rival holds may be their idiosyncrasy.
 
 ## 3. Classify intent
 

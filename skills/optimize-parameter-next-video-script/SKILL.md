@@ -9,7 +9,7 @@ A script is a bundle of **parameters**, each one a knob with a value: topic, tit
 
 The job: read what the channel's own data says, hold the settled parameters constant, and change **one** deliberately.
 
-Invoke `dynamic-query-neo4j` for schema recon.
+Read the graph's live schema before querying it; the property names below are placeholders.
 
 ## 1. Pull performance with a baseline
 

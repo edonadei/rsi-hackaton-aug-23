@@ -14,7 +14,7 @@ A thread is **worth entering** on four conditions at once, and failing any one d
 3. **Open** — the subreddit's rules permit what you intend to post.
 4. **Answerable** — there is something useful to say beyond naming the product.
 
-Invoke `dynamic-query-neo4j` for schema recon.
+Read the graph's live schema before querying it; the labels below are placeholders.
 
 ## 1. Build the query terms
 
@@ -22,8 +22,8 @@ Start from the subject's **problem language**, not its product language. People 
 
 Derive terms from three sources:
 
-- The keyword clusters from `optimize-keyword-strategy`, especially informational and commercial intent.
-- Competitor names from `find-true-competitors` — "alternative to X" threads are the highest-intent threads on Reddit.
+- The keywords the subject targets, especially informational and commercial intent.
+- Competitor names — "alternative to X" threads are the highest-intent threads on Reddit.
 - Symptom phrases: what the problem feels like before the buyer knows a category exists.
 
 ## 2. Search the graph

@@ -48,6 +48,24 @@ caliper run skills/find-true-competitors/find-true-competitors.eval.yaml --k 3 -
 Needs `caliper` (`pipx install caliper-eval`). Per-skill detail is in
 [`skills/README.md`](skills/README.md).
 
+## Tooling
+
+The [caliper repo](https://github.com/edonadei/caliper) ships two skills that
+drive this loop, so the work is done in conversation rather than by hand:
+
+- **`grill-skill`** — interviews you into an eval, writes the `.eval.yaml`, then
+  runs the create → test → improve loop. Every spec in `skills/` came from it.
+- **`evaluate-skill`** — measures an existing skill: pass@k over k runs, a
+  baseline comparison against the raw agent, and reads of the results.
+
+```bash
+npx skills add edonadei/caliper
+```
+
+They are also the reference implementation of the hand-run version of the loop.
+`meta-framework-rsi-skill-improvement` is the attempt to close it — same steps,
+no human in the middle.
+
 ## Status
 
 The corpus and the scoreboard are done and validating. The climber is a stub —

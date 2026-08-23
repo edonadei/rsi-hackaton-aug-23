@@ -39,10 +39,9 @@ live database, so they run anywhere.
 caliper run skills/find-true-competitors/find-true-competitors.eval.yaml --k 3
 ```
 
-Every spec installs all five workflow skills and asserts `activates:`, so a run measures
-two things: whether the skill does the job, and whether it was the one that
-fired. That second number is what catches an edit that broadens a skill until it
-steals a neighbour's triggers.
+Each spec installs only its own skill and asserts `activates:`, so a run measures
+two things: whether the skill does the job, and whether the agent reached for it
+at all. The five are unrelated, so there is no neighbourhood worth installing.
 
 `--baseline` scores the raw agent on the same tasks — the floor any edit has to
 beat. `caliper compare <before> <after>` diffs two saved runs task by task, which

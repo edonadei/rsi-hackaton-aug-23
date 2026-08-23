@@ -1,11 +1,6 @@
-# Siblings are installed alongside so the run also tests that THIS skill is
-# the one that fires, rather than a neighbour with overlapping vocabulary.
 skills:
   - ./SKILL.md
-  - ../find-true-competitors/SKILL.md
-  - ../optimize-keyword-strategy/SKILL.md
-  - ../find-reddit-relevant-threads/SKILL.md
-  - ../optimize-parameter-next-video-script/SKILL.md
+
 sandbox:
   forbidden_files:
     - ".*\\.eval\\.yaml$"

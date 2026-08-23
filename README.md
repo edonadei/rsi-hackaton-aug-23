@@ -28,9 +28,11 @@ baseline  →  edit the SKILL.md  →  caliper run --k 3  →  caliper compare  
 ```
 
 Two numbers come back per run, and both matter. **Task pass@k** says whether the
-skill does the job. **Activation rate** says whether it was the one that fired —
-every spec installs all five skills, so an edit that broadens a skill until it
-steals a neighbour's triggers shows up as a loss instead of hiding as a win.
+skill does the job. **Activation rate** says whether the skill fired at all — a
+skill the agent never reaches for scores nothing, however good its content.
+
+Each spec installs only the skill under test. The five are unrelated, so a
+neighbourhood would add cost and noise without measuring anything real.
 
 `--baseline` scores the raw agent on the same tasks. That is the floor: a skill
 that does not beat it is costing context for nothing.

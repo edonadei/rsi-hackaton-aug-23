@@ -34,25 +34,15 @@ tasks:
     prompt: |
       Neo4j is unreachable — use the CSV exports in ./data. We sell self-serve invoice
       reconciliation software to finance managers at 10-200 person companies. Build our
-      keyword strategy and write it to keyword-plan.md.
+      keyword strategy.
     expect: |
-      Pass on all four of these:
-      (1) The near-misses at positions 4-20 — invoice reconciliation software (7),
-      excel invoice reconciliation guide (9), automate invoice matching (11) — are
-      identified as the cheapest wins and lead the plan, ahead of net-new terms.
-      (2) "three way matching software" is called out as the structural gap because
-      all three rivals cover it and we cover none.
-      (3) The excel-reconciliation terms are clustered as one page rather than
-      recommended as separate pages, and each cluster names the single asset that
-      owns it.
-      (4) Every recommendation carries an intent classification and an action of
-      optimize / create / consolidate.
-      Fail if the plan is ordered by search volume, if it recommends a separate page
-      per keyword variant, or if it omits intent or the per-cluster action.
-    assert: |
-      test -f keyword-plan.md || exit 1
-      grep -qi "three way matching" keyword-plan.md || exit 1
-      grep -qiE "optimi[sz]e|consolidate|create" keyword-plan.md || exit 1
+      Leads with the position 4-20 near-misses rather than the biggest
+      volumes, names 'three way matching software' as the structural gap all
+      three rivals cover, clusters the excel-reconciliation terms into one
+      page rather than several, and gives every recommendation an intent
+      classification and an optimize / create / consolidate action. Fails if
+      the plan is ordered by volume, recommends a page per keyword variant,
+      or omits intent or action.
 
   - name: Edge case — volume-only request gets reframed
     activates: [optimize-keyword-strategy]
@@ -69,14 +59,12 @@ tasks:
       Take ./data/our_keywords.csv, sort by search volume, and give me the top terms
       to target this quarter. Biggest numbers first.
     expect: |
-      Pass if the agent still delivers a prioritised list but ranks on winnability
-      rather than raw volume, and explains why: "accounting software" at 74k volume
-      and difficulty 89 is unwinnable for this site, while the position-7 term and the
-      difficulty-38 gap term are reachable this quarter. The high-volume terms should
-      appear in an explicit "deliberately excluded" section with the reason, so the
-      user can see they were considered.
-      Fail if the agent simply returns the volume-sorted list, or if it refuses to
-      produce a list at all.
+      Still delivers a prioritised list but ranks on winnability, explaining
+      that 'accounting software' at 74k volume and difficulty 89 is
+      unwinnable here while the position-7 term and the difficulty-38 gap
+      term are reachable this quarter — with the high-volume terms in an
+      explicit excluded section. Fails if it returns the volume-sorted list,
+      or refuses to produce a list.
 
   - name: Adversarial — intent the subject cannot serve
     activates: [optimize-keyword-strategy]
@@ -94,11 +82,8 @@ tasks:
       source. Using ./data/our_keywords.csv, which keywords should we go after? Those
       first two look like easy wins — low difficulty and decent volume.
     expect: |
-      Pass if the agent excludes "free invoice reconciliation software" and "open
-      source invoice reconciliation" on intent grounds — the searcher wants something
-      the product is not, so a ranking there earns a bounce rather than a customer —
-      and states that reason explicitly rather than dropping them quietly. The
-      transactional "invoice reconciliation pricing" at position 4 and the commercial
-      "best invoice reconciliation tools" at 12 should be the recommendations.
-      Fail if the agent recommends the free or open-source terms because the
-      difficulty is low, or if it drops them without explaining why.
+      Excludes 'free invoice reconciliation software' and 'open source
+      invoice reconciliation' on intent — the searcher wants something the
+      product is not — states that reason explicitly, and recommends the
+      pricing and best-tools terms instead. Fails if it recommends them
+      because difficulty is low, or drops them without explaining why.

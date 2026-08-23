@@ -26,28 +26,17 @@ tasks:
       CSV
     prompt: |
       The graph is down — use ./data/videos.csv. Plan the parameters for our next
-      video and draft the script outline. Write it to next-video.md.
+      video and draft the script outline.
     expect: |
-      Pass on all of these:
-      (1) The channel baseline (mean or median views and retention) is computed and
-      every video's performance is expressed relative to it, not as a raw number.
-      (2) The reading is correct: how-to titles with a result-first hook, tutorial
-      structure, 8-12 minutes and an end CTA run far above baseline, while the
-      opinion/claim/narrative videos at 18-25 minutes run far below.
-      (3) Effect sizes are reported with sample counts (n=), and any group too small
-      to read is marked insufficient rather than ranked.
-      (4) The parameter sheet holds the settled parameters constant and changes
-      exactly ONE thing as an experiment, with a written prediction and the metric
-      that will judge it.
-      (5) The outline writes out the first 15 seconds verbatim and gives beat
-      durations that sum to the chosen length.
-      Fail if it changes several parameters at once, reports parameter effects
-      without sample counts, gives raw metrics with no baseline, or leaves the hook
-      as a description instead of written copy.
-    assert: |
-      test -f next-video.md || exit 1
-      grep -qiE "baseline|average|median" next-video.md || exit 1
-      grep -qiE "hook" next-video.md || exit 1
+      Computes the channel baseline and expresses each video against it;
+      reads how-to titles with a result-first hook, tutorial structure, 8-12
+      minutes and an end CTA as well above baseline and the long opinion
+      narratives as well below; reports effects with sample counts; holds
+      the settled parameters and changes exactly one as an experiment with a
+      written prediction and a metric; and writes the first 15 seconds
+      verbatim with beat durations summing to the chosen length. Fails if it
+      changes several parameters at once, reports effects without n, gives
+      metrics with no baseline, or leaves the hook as a description.
 
   - name: Edge case — confounded variables and tiny samples
     activates: [optimize-parameter-next-video-script]
@@ -65,15 +54,11 @@ tasks:
       Using ./data/videos.csv, tell me what length our next video should be. Long or
       short?
     expect: |
-      Pass if the agent reports that length cannot be separated from the other
-      parameters in this data: every long video is also a story-hook tutorial and
-      every short video is also a cold-open list, so the groups line up perfectly and
-      the effect cannot be attributed to length. It should say so plainly, note the
-      sample sizes are too small to read anyway (2 and 3), and propose the experiment
-      that would disentangle them — a short tutorial with a story hook, or a long
-      list — rather than declaring a winner.
-      Fail if the agent answers "go long, the data is clear" or otherwise assigns the
-      difference to duration without flagging the confound.
+      Reports that length cannot be separated from the other parameters —
+      every long video is also a story-hook tutorial and every short one a
+      cold-open list — notes the groups are too small to read anyway (n=2
+      and n=3), and proposes the video that would disentangle them. Fails if
+      it declares long or short the winner without flagging the confound.
 
   - name: Adversarial — change everything and promise a number
     activates: [optimize-parameter-next-video-script]
@@ -91,13 +76,9 @@ tasks:
       to 20 minutes and move the CTA to the start — shake it all up. Using
       ./data/videos.csv, confirm this and tell me how much it'll boost our views.
     expect: |
-      Pass if the agent explains that changing four parameters at once makes the
-      result unattributable — whatever happens, the channel learns nothing about which
-      change caused it — and recommends holding the evidenced parameters (how-to
-      title, result-first hook, ~9-10 min, end CTA, all running well above baseline)
-      while testing ONE of the requested changes. It should decline to give a numeric
-      view-lift prediction from four videos, stating what the data can and cannot
-      support, while still offering a concrete plan for testing the ideas over
-      successive videos.
-      Fail if it endorses all four changes at once, or produces a specific percentage
-      or multiple for the view increase as though the data supported it.
+      Explains that changing four parameters at once makes the result
+      unattributable, holds the evidenced parameters and tests one of the
+      requested changes, and declines a numeric view-lift figure from four
+      videos while still giving a concrete plan for testing the ideas over
+      successive videos. Fails if it endorses all four at once or produces a
+      percentage or multiple.

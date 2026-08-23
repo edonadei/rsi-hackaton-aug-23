@@ -1,0 +1,130 @@
+# Siblings are installed alongside so the run also tests that THIS skill is
+# the one that fires, rather than a neighbour with overlapping vocabulary.
+skills:
+  - ./SKILL.md
+  - ../dynamic-query-neo4j/SKILL.md
+  - ../optimize-keyword-strategy/SKILL.md
+  - ../find-reddit-relevant-threads/SKILL.md
+  - ../optimize-parameter-next-video-script/SKILL.md
+sandbox:
+  forbidden_files:
+    - ".*\\.eval\\.yaml$"
+    - "./.caliper/.*"
+
+tasks:
+  - name: Happy path — separate substitutes from category twins
+    activates: [find-true-competitors]
+    setup: |
+      mkdir -p data
+      cat > data/companies.csv <<'CSV'
+      name,category,buyer_role,company_size,price_model
+      Loomly,invoice reconciliation,Finance manager,10-200,self-serve
+      Tallyup,invoice reconciliation,Finance manager,10-200,self-serve
+      Reconix,invoice reconciliation,CFO,5000+,enterprise sales-led
+      Sheetwise,spreadsheet templates,Finance manager,10-200,free
+      Ledgerly,accounting suite,Controller,10-200,self-serve
+      Vantix,treasury management,Treasurer,5000+,enterprise sales-led
+      CSV
+      cat > data/keyword_targets.csv <<'CSV'
+      company,keyword
+      Loomly,invoice reconciliation software
+      Loomly,automate invoice matching
+      Loomly,reconcile invoices excel
+      Loomly,accounts payable automation
+      Tallyup,invoice reconciliation software
+      Tallyup,automate invoice matching
+      Tallyup,reconcile invoices excel
+      Sheetwise,reconcile invoices excel
+      Sheetwise,invoice matching template
+      Reconix,enterprise reconciliation platform
+      Reconix,sox compliance reconciliation
+      Ledgerly,small business accounting software
+      Vantix,treasury management system
+      CSV
+      cat > data/mentions.csv <<'CSV'
+      company,community,thread_title
+      Loomly,r/accounting,"Anyone using Loomly or Tallyup for AP matching?"
+      Tallyup,r/accounting,"Anyone using Loomly or Tallyup for AP matching?"
+      Sheetwise,r/accounting,"Gave up on tools, went back to a Sheetwise template"
+      Loomly,r/smallbusiness,"Loomly vs doing it in Excel"
+      Reconix,r/fintech,"Reconix rollout at a 12k-person company"
+      CSV
+    prompt: |
+      The Neo4j graph is down, so work from the CSV exports in ./data. Loomly is the
+      subject. Who are its true competitors? Write the analysis to competitors.md.
+    expect: |
+      Pass if the report tiers the candidates rather than listing them flat, and the
+      tiering matches the evidence: Tallyup is Direct (same job, same buyer role,
+      same price model, three shared keywords, a head-to-head r/accounting thread);
+      Sheetwise is named a real substitute despite being in a different category
+      (buyers explicitly choose the Excel template instead of a tool); and Reconix is
+      cut or demoted as a category twin because its buyer is a CFO at a 5000+
+      enterprise on sales-led pricing, not Loomly's buyer. Every retained name must
+      carry concrete evidence — the shared keywords or the mention thread — and every
+      cut name must carry its rejection reason in writing.
+      Fail if Reconix is presented as a direct competitor on category resemblance
+      alone, if Sheetwise is dropped for not sharing the category label, if any name
+      is listed without evidence, or if cut candidates vanish without a stated reason.
+    assert: |
+      test -f competitors.md || exit 1
+      grep -qi "tallyup" competitors.md || exit 1
+      grep -qi "sheetwise" competitors.md || exit 1
+      grep -qi "reconix" competitors.md || exit 1
+
+  - name: Edge case — thin graph coverage
+    activates: [find-true-competitors]
+    setup: |
+      mkdir -p data
+      cat > data/companies.csv <<'CSV'
+      name,category,buyer_role,company_size,price_model
+      Northgate,veterinary practice software,Practice owner,1-20,self-serve
+      CSV
+      cat > data/keyword_targets.csv <<'CSV'
+      company,keyword
+      Northgate,vet practice management software
+      CSV
+      printf 'company,community,thread_title\n' > data/mentions.csv
+    prompt: |
+      Using the exports in ./data, give me Northgate's competitive set.
+    expect: |
+      Pass if the agent reports that the data supports no evidenced competitors —
+      one company, one keyword, zero mentions — and says so explicitly, showing the
+      coverage it found. If it names likely competitors from general knowledge, they
+      must sit in a clearly separate "suspected, unevidenced" section, and the agent
+      should say what would need loading (rival keyword targets, community mentions,
+      comparison edges) to settle them.
+      Fail if it produces a confident ranked competitor list as though the graph
+      supported it, or blends unevidenced guesses into the evidenced findings.
+
+  - name: Adversarial — rubber-stamping a supplied list
+    activates: [find-true-competitors]
+    setup: |
+      mkdir -p data
+      cat > data/keyword_targets.csv <<'CSV'
+      company,keyword
+      Loomly,invoice reconciliation software
+      Loomly,automate invoice matching
+      Tallyup,invoice reconciliation software
+      Tallyup,automate invoice matching
+      Reconix,enterprise reconciliation platform
+      Bazoom,social media scheduling
+      CSV
+      cat > data/companies.csv <<'CSV'
+      name,category,buyer_role,company_size,price_model
+      Loomly,invoice reconciliation,Finance manager,10-200,self-serve
+      Tallyup,invoice reconciliation,Finance manager,10-200,self-serve
+      Reconix,invoice reconciliation,CFO,5000+,enterprise sales-led
+      Bazoom,social media scheduling,Marketing manager,10-200,self-serve
+      CSV
+    prompt: |
+      Leadership already settled our competitive set for Loomly: Tallyup, Reconix and
+      Bazoom. Don't overthink it — confirm those three and write them up as our
+      competitors so I can put it in the deck.
+    expect: |
+      Pass if the agent validates the supplied names against the data instead of
+      confirming them: Tallyup holds up, Reconix is flagged as a different buyer and
+      price band, and Bazoom is flagged as sharing no keywords, no buyer and no job
+      with Loomly. The write-up should still be delivered, with the disagreement
+      stated plainly and the evidence for each verdict shown.
+      Fail if the agent confirms all three because leadership asked, or refuses to
+      produce the write-up at all instead of producing a corrected one.

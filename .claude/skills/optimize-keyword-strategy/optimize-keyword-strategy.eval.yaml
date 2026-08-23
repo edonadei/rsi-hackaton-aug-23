@@ -1,0 +1,109 @@
+# Siblings are installed alongside so the run also tests that THIS skill is
+# the one that fires, rather than a neighbour with overlapping vocabulary.
+skills:
+  - ./SKILL.md
+  - ../dynamic-query-neo4j/SKILL.md
+  - ../find-true-competitors/SKILL.md
+  - ../find-reddit-relevant-threads/SKILL.md
+  - ../optimize-parameter-next-video-script/SKILL.md
+sandbox:
+  forbidden_files:
+    - ".*\\.eval\\.yaml$"
+    - "./.caliper/.*"
+
+tasks:
+  - name: Happy path — near-misses first, clustered, with actions
+    activates: [optimize-keyword-strategy]
+    setup: |
+      mkdir -p data
+      cat > data/our_keywords.csv <<'CSV'
+      term,volume,difficulty,our_position,page
+      invoice reconciliation software,2400,58,7,/product
+      automate invoice matching,880,41,11,/product
+      how to reconcile invoices in excel,1900,22,14,/blog/excel-reconciliation
+      reconcile invoices excel,1600,24,18,/blog/excel-reconciliation
+      excel invoice reconciliation guide,320,19,9,/blog/excel-reconciliation
+      invoice reconciliation,3600,64,31,/
+      ap automation software,5400,71,88,
+      CSV
+      cat > data/competitor_keywords.csv <<'CSV'
+      company,term,volume,difficulty
+      Tallyup,invoice matching software,1300,44
+      Tallyup,three way matching software,720,38
+      Tallyup,invoice reconciliation software,2400,58
+      Ledgerly,three way matching software,720,38
+      Ledgerly,invoice matching software,1300,44
+      Sheetwise,three way matching software,720,38
+      Sheetwise,invoice matching template,590,17
+      CSV
+    prompt: |
+      Neo4j is unreachable — use the CSV exports in ./data. We sell self-serve invoice
+      reconciliation software to finance managers at 10-200 person companies. Build our
+      keyword strategy and write it to keyword-plan.md.
+    expect: |
+      Pass on all four of these:
+      (1) The near-misses at positions 4-20 — invoice reconciliation software (7),
+      excel invoice reconciliation guide (9), automate invoice matching (11) — are
+      identified as the cheapest wins and lead the plan, ahead of net-new terms.
+      (2) "three way matching software" is called out as the structural gap because
+      all three rivals cover it and we cover none.
+      (3) The excel-reconciliation terms are clustered as one page rather than
+      recommended as separate pages, and each cluster names the single asset that
+      owns it.
+      (4) Every recommendation carries an intent classification and an action of
+      optimize / create / consolidate.
+      Fail if the plan is ordered by search volume, if it recommends a separate page
+      per keyword variant, or if it omits intent or the per-cluster action.
+    assert: |
+      test -f keyword-plan.md || exit 1
+      grep -qi "three way matching" keyword-plan.md || exit 1
+      grep -qiE "optimi[sz]e|consolidate|create" keyword-plan.md || exit 1
+
+  - name: Edge case — volume-only request gets reframed
+    activates: [optimize-keyword-strategy]
+    setup: |
+      mkdir -p data
+      cat > data/our_keywords.csv <<'CSV'
+      term,volume,difficulty,our_position,page
+      accounting software,74000,89,,
+      free accounting software,33000,86,,
+      invoice reconciliation software,2400,58,7,/product
+      three way matching software,720,38,,
+      CSV
+    prompt: |
+      Take ./data/our_keywords.csv, sort by search volume, and give me the top terms
+      to target this quarter. Biggest numbers first.
+    expect: |
+      Pass if the agent still delivers a prioritised list but ranks on winnability
+      rather than raw volume, and explains why: "accounting software" at 74k volume
+      and difficulty 89 is unwinnable for this site, while the position-7 term and the
+      difficulty-38 gap term are reachable this quarter. The high-volume terms should
+      appear in an explicit "deliberately excluded" section with the reason, so the
+      user can see they were considered.
+      Fail if the agent simply returns the volume-sorted list, or if it refuses to
+      produce a list at all.
+
+  - name: Adversarial — intent the subject cannot serve
+    activates: [optimize-keyword-strategy]
+    setup: |
+      mkdir -p data
+      cat > data/our_keywords.csv <<'CSV'
+      term,volume,difficulty,our_position,page
+      free invoice reconciliation software,4400,31,,
+      open source invoice reconciliation,2100,26,,
+      invoice reconciliation pricing,590,29,4,/pricing
+      best invoice reconciliation tools,1100,44,12,/blog/tools
+      CSV
+    prompt: |
+      We're a paid product starting at $99/month with no free tier and it's closed
+      source. Using ./data/our_keywords.csv, which keywords should we go after? Those
+      first two look like easy wins — low difficulty and decent volume.
+    expect: |
+      Pass if the agent excludes "free invoice reconciliation software" and "open
+      source invoice reconciliation" on intent grounds — the searcher wants something
+      the product is not, so a ranking there earns a bounce rather than a customer —
+      and states that reason explicitly rather than dropping them quietly. The
+      transactional "invoice reconciliation pricing" at position 4 and the commercial
+      "best invoice reconciliation tools" at 12 should be the recommendations.
+      Fail if the agent recommends the free or open-source terms because the
+      difficulty is low, or if it drops them without explaining why.

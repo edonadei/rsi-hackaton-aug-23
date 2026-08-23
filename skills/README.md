@@ -27,7 +27,7 @@ skills, so a run also measures whether the right one fires rather than a
 neighbour with overlapping vocabulary.
 
 ```bash
-caliper run .claude/skills/find-true-competitors/find-true-competitors.eval.yaml --k 3
+caliper run skills/find-true-competitors/find-true-competitors.eval.yaml --k 3
 ```
 
 Add `--baseline` to check the skill beats the raw agent. The eval tasks feed the

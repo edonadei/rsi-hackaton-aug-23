@@ -1,10 +1,10 @@
 # Skills
 
-Five unrelated workflow skills, plus the meta-framework that improves them.
+Five unrelated workflow skills, plus the loop that improves them.
 
 The five are the **corpus**: deliberately independent of each other, each with an
 eval spec beside it, so a change to one is measurable on its own. They are what
-`meta-framework-rsi-skill-improvement` hill-climbs on — the subject matter is
+`rsi-meta` hill-climbs on — the subject matter is
 incidental, the score is the point.
 
 | Skill | Workflow |
@@ -14,7 +14,7 @@ incidental, the score is the point.
 | `optimize-keyword-strategy` | Rank keywords by winnability and cluster them into pages |
 | `find-reddit-relevant-threads` | Pick Reddit threads worth entering |
 | `optimize-parameter-next-video-script` | Set the next video's parameters from past performance |
-| `meta-framework-rsi-skill-improvement` | The hill-climbing loop itself — placeholder |
+| `rsi-meta` | The hill-climbing loop itself — harden the eval, measure the floor, climb, version |
 
 ## Install
 
@@ -31,8 +31,8 @@ npx skills add edonadei/rsi-hackaton-aug-23 --list
 
 ## Evals
 
-Each skill carries a `<name>.eval.yaml` beside it, with a happy path, an edge
-case, and an adversarial task. Tasks feed the agent CSV fixtures rather than a
+Each skill carries a `<name>.eval.yaml` beside it, with at least a happy path, an
+edge case, and an adversarial task. Tasks feed the agent CSV fixtures rather than a
 live database, so they run anywhere.
 
 ```bash
@@ -43,8 +43,8 @@ Each spec installs only its own skill and asserts `activates:`, so a run measure
 two things: whether the skill does the job, and whether the agent reached for it
 at all. The five are unrelated, so there is no neighbourhood worth installing.
 
-`--baseline` scores the raw agent on the same tasks — the floor any edit has to
-beat. `caliper compare <before> <after>` diffs two saved runs task by task, which
+`--ablate <name>` removes the skill and scores the raw agent on the same tasks —
+the floor any edit has to beat. `caliper compare <before> <after>` diffs two saved runs task by task, which
 is the measurement the hill-climb runs on.
 
 ## Graph labels
